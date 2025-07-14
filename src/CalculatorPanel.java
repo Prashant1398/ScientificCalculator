@@ -1,6 +1,9 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import net.objecthunter.exp4j.Expression;
+import net.objecthunter.exp4j.ExpressionBuilder;
+
 
 public class CalculatorPanel extends JPanel {
     private JTextField display = new JTextField();
@@ -83,18 +86,14 @@ public class CalculatorPanel extends JPanel {
 
 private double eval(String expr) throws Exception {
     if (expr == null || expr.trim().isEmpty()) throw new Exception("Empty");
-    if (expr.contains("^")) {
-        String[] parts = expr.split("\\^");
-        if (parts.length != 2) throw new Exception("Invalid power expression");
-        return Math.pow(Double.parseDouble(parts[0]), Double.parseDouble(parts[1]));
-    }
-    Object result = new javax.script.ScriptEngineManager()
-        .getEngineByName("JavaScript")
-        .eval(expr);
-    if (result instanceof Number) {
-        return ((Number) result).doubleValue();
-    } else {
+    // exp4j supports ^ for power, so no need for manual split
+    Expression expression = new ExpressionBuilder(expr).build();
+    double result = expression.evaluate();
+    if (Double.isNaN(result) || Double.isInfinite(result)) {
         throw new Exception("Invalid expression");
     }
+    return result;
 }
+
+
 }
